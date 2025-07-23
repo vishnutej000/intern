@@ -1,197 +1,230 @@
-const supabase = require('./supabase');
+const { createClient } = require('@supabase/supabase-js');
 
-// Incident operations
+// Initialize Supabase client for backend operations
+const supabaseUrl = 'https://tfvmzwiwwqpsuhffymnk.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmdm16d2l3d3Fwc3VoZmZ5bW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNTM2MDIsImV4cCI6MjA2ODgyOTYwMn0.TMoqcsA7I4HtHsHd6MZ7Xge1AEG42mrYQnXn3Nwrl0U';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Incident Operations (Supabase integration)
 const incidentOperations = {
-  // Get all incidents with optional resolved filter
+  // Get incidents with optional resolved filter, ordered newest first
   async getIncidents(resolvedFilter = null) {
-    let query = supabase
-      .from('incidents')
-      .select(`
-        *,
-        cameras:camera_id (
-          id,
-          name,
-          location
-        )
-      `)
-      .order('ts_start', { ascending: false });
+    try {
+      let query = supabase
+        .from('incidents')
+        .select('*')
+        .order('created_at', { ascending: false }); // newest first
 
-    if (resolvedFilter !== null) {
-      query = query.eq('resolved', resolvedFilter);
+      // Apply resolved filter if provided
+      if (resolvedFilter !== null) {
+        const status = resolvedFilter ? 'resolved' : 'unresolved';
+        query = query.eq('status', status);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      throw new Error(`Failed to get incidents: ${error.message}`);
     }
-
-    const { data, error } = await query;
-    
-    if (error) {
-      throw new Error(`Error fetching incidents: ${error.message}`);
-    }
-
-    // Transform data to match expected format
-    return data.map(incident => ({
-      ...incident,
-      cameraName: incident.cameras?.name,
-      cameraLocation: incident.cameras?.location,
-      thumbnailUrl: incident.thumbnail_url || `/api/placeholder-thumbnail/${incident.id}`
-    }));
   },
 
-  // Get single incident by ID
+  // Get incident by ID
   async getIncidentById(id) {
-    const { data, error } = await supabase
-      .from('incidents')
-      .select(`
-        *,
-        cameras:camera_id (
-          id,
-          name,
-          location
-        )
-      `)
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('incidents')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      throw new Error(`Error fetching incident: ${error.message}`);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('Incident not found');
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to get incident: ${error.message}`);
     }
-
-    return {
-      ...data,
-      cameraName: data.cameras?.name,
-      cameraLocation: data.cameras?.location,
-      thumbnailUrl: data.thumbnail_url || `/api/placeholder-thumbnail/${data.id}`
-    };
   },
 
-  // Toggle incident resolved status
+  // Toggle incident resolved status and return updated row
   async toggleIncidentResolved(id) {
-    // First get current incident
-    const incident = await this.getIncidentById(id);
-    
-    // Toggle resolved status
-    const newResolvedStatus = !incident.resolved;
-    
-    const { data, error } = await supabase
-      .from('incidents')
-      .update({ 
-        resolved: newResolvedStatus,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select(`
-        *,
-        cameras:camera_id (
-          id,
-          name,
-          location
-        )
-      `)
-      .single();
+    try {
+      // First get the current incident
+      const incident = await this.getIncidentById(id);
+      
+      // Toggle the status
+      const newStatus = incident.status === 'resolved' ? 'unresolved' : 'resolved';
+      
+      // Update the incident
+      const { data, error } = await supabase
+        .from('incidents')
+        .update({ 
+          status: newStatus,
+          // The resolved_at timestamp will be handled by the database trigger
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error) {
-      throw new Error(`Error updating incident: ${error.message}`);
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to toggle incident status: ${error.message}`);
     }
+  },
 
-    return {
-      ...data,
-      cameraName: data.cameras?.name,
-      cameraLocation: data.cameras?.location,
-      thumbnailUrl: data.thumbnail_url || `/api/placeholder-thumbnail/${data.id}`
-    };
+  // Create a new incident
+  async createIncident(incidentData) {
+    try {
+      const { data, error } = await supabase
+        .from('incidents')
+        .insert([incidentData])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to create incident: ${error.message}`);
+    }
   }
 };
 
-// Camera operations
+// Camera Operations (Supabase integration)
 const cameraOperations = {
   // Get all cameras
   async getCameras() {
-    const { data, error } = await supabase
-      .from('cameras')
-      .select('*')
-      .order('id');
+    try {
+      const { data, error } = await supabase
+        .from('cameras')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
 
-    if (error) {
-      throw new Error(`Error fetching cameras: ${error.message}`);
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      throw new Error(`Failed to get cameras: ${error.message}`);
     }
-
-    return data;
   },
 
   // Get camera by ID
   async getCameraById(id) {
-    const { data, error } = await supabase
-      .from('cameras')
-      .select('*')
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('cameras')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      throw new Error(`Error fetching camera: ${error.message}`);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('Camera not found');
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to get camera: ${error.message}`);
     }
-
-    return data;
   }
 };
 
-// User operations
+// User Operations (Supabase integration for authentication)
 const userOperations = {
   // Get user by username
   async getUserByUsername(username) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('username', username)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      throw new Error(`Error fetching user: ${error.message}`);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null; // User not found
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to get user: ${error.message}`);
     }
-
-    return data;
   },
 
   // Get user by ID
   async getUserById(id) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, username, email, role, avatar_url, last_login')
-      .eq('id', id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      throw new Error(`Error fetching user: ${error.message}`);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('User not found');
+        }
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Failed to get user: ${error.message}`);
     }
-
-    return data;
   },
 
-  // Update user last login
-  async updateLastLogin(id) {
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        last_login: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+  // Update last login timestamp
+  async updateLastLogin(userId) {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', userId);
 
-    if (error) {
-      throw new Error(`Error updating last login: ${error.message}`);
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+    } catch (error) {
+      throw new Error(`Failed to update last login: ${error.message}`);
     }
   },
 
   // Update user profile
-  async updateUserProfile(id, { email, avatar_url }) {
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        email,
-        avatar_url,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+  async updateUserProfile(userId, profileData) {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update(profileData)
+        .eq('id', userId);
 
-    if (error) {
-      throw new Error(`Error updating user profile: ${error.message}`);
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
+    } catch (error) {
+      throw new Error(`Failed to update user profile: ${error.message}`);
     }
   }
 };
@@ -199,5 +232,6 @@ const userOperations = {
 module.exports = {
   incidentOperations,
   cameraOperations,
-  userOperations
+  userOperations,
+  supabase // Export supabase client in case it's needed elsewhere
 };
