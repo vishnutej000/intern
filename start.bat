@@ -12,7 +12,7 @@ start "Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo Both servers are starting...
-echo Backend: http://localhost:3001
+echo Backend: %NEXT_PUBLIC_BACKEND_URL%
 echo Frontend: http://localhost:3000
 echo.
 pause

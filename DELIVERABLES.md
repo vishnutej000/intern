@@ -58,7 +58,7 @@ A professional CCTV monitoring dashboard for jewelry store security with real-ti
 - ✅ **Color-coded incidents** matching incident types
 
 #### **4. Navigation Bar (Top)**
-- ✅ **MANDLAC-X** branding with yellow "M" logo
+✅ **SecureSight** branding with yellow "S" logo
 - ✅ **Navigation tabs**: Dashboard, Cameras, Scenes, Incidents, Users
 - ✅ **User profile**: Mohammed Alpas with email
 - ✅ **Yellow border** accent
@@ -137,11 +137,11 @@ npm run dev
 
 ### **Access Points**
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
+- **Backend API**: ${NEXT_PUBLIC_BACKEND_URL}
 - **API Endpoints**:
-  - GET http://localhost:3001/api/incidents
-  - GET http://localhost:3001/api/cameras
-  - PATCH http://localhost:3001/api/incidents/:id/resolve
+-  - GET ${NEXT_PUBLIC_BACKEND_URL}/api/incidents
+-  - GET ${NEXT_PUBLIC_BACKEND_URL}/api/cameras
+-  - PATCH ${NEXT_PUBLIC_BACKEND_URL}/api/incidents/:id/resolve
 
 ## 📊 **Data Summary**
 - **Total Incidents**: 15
