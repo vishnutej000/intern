@@ -49,12 +49,15 @@ INSERT INTO users (username, email, password_hash, role) VALUES
 ('user', 'user@securesight.com', '$2b$10$rOzJqQqQqQqQqQqQqQqQqOzJqQqQqQqQqQqQqQqQqOzJqQqQqQqQqQ', 'user');
 
 -- Insert sample incident data
-INSERT INTO incidents (type, camera_location, start_time, end_time, thumbnail_url, metadata) VALUES
-('Unauthorised Access', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam1.gif', '{"severity": "medium", "confidence": 0.85}'),
-('Gun Threat', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam2.gif', '{"severity": "high", "confidence": 0.92}'),
-('Unauthorised Access', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam3.gif', '{"severity": "medium", "confidence": 0.78}'),
-('Unauthorised Access', 'Shop Floor Camera B', '2025-07-07 13:20:00', '2025-07-07 13:22:00', '/images/cam1.gif', '{"severity": "low", "confidence": 0.65}'),
-('Gun Threat', 'Shop Floor Camera C', '2025-07-07 12:15:00', '2025-07-07 12:17:00', '/images/cam2.gif', '{"severity": "high", "confidence": 0.95}');
+INSERT INTO incidents (type, camera_location, start_time, end_time, thumbnail_url, metadata, status) VALUES
+('Unauthorised Access', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam1.gif', '{"severity": "medium", "confidence": 0.85}', 'unresolved'),
+('Gun Threat', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam2.gif', '{"severity": "high", "confidence": 0.92}', 'unresolved'),
+('Unauthorised Access', 'Shop Floor Camera A', '2025-07-07 14:35:00', '2025-07-07 14:37:00', '/images/cam3.gif', '{"severity": "medium", "confidence": 0.78}', 'unresolved'),
+('Unauthorised Access', 'Shop Floor Camera B', '2025-07-07 13:20:00', '2025-07-07 13:22:00', '/images/cam1.gif', '{"severity": "low", "confidence": 0.65}', 'unresolved'),
+('Gun Threat', 'Shop Floor Camera C', '2025-07-07 12:15:00', '2025-07-07 12:17:00', '/images/cam2.gif', '{"severity": "high", "confidence": 0.95}', 'unresolved'),
+('Accident', 'Shop Floor Camera A', '2025-07-08 09:10:00', '2025-07-08 09:15:00', '/images/cam1.gif', '{"severity": "medium", "confidence": 0.80}', 'unresolved'),
+('Murder', 'Shop Floor Camera B', '2025-07-08 10:20:00', '2025-07-08 10:25:00', '/images/cam2.gif', '{"severity": "high", "confidence": 0.99}', 'unresolved'),
+('Chain Snatching', 'Shop Floor Camera C', '2025-07-08 11:30:00', '2025-07-08 11:35:00', '/images/cam3.gif', '{"severity": "medium", "confidence": 0.75}', 'unresolved');
 
 -- Create indexes for better performance
 CREATE INDEX idx_incidents_status ON incidents(status);
