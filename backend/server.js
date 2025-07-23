@@ -1,11 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { incidentOperations, cameraOperations, userOperations } = require('../database/operations');
+const { incidentOperations, cameraOperations, userOperations } = require('./database/operations');
 
 const app = express();
-const PORT = process.env.PORT || process.env.NEXT_PUBLIC_BACKEND_PORT || 3001;
+const PORT = process.env.BACKEND_PORT || process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());

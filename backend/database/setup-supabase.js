@@ -150,8 +150,8 @@ async function insertSampleData() {
 
     console.log('\n🎉 Database setup completed successfully!');
     console.log('\n📋 API Endpoints ready:');
-    console.log('   GET  http://localhost:3001/api/incidents?resolved=false');
-    console.log('   PATCH http://localhost:3001/api/incidents/:id/resolve');
+    console.log(`   GET  ${process.env.NEXT_PUBLIC_BACKEND_URL}/api/incidents?resolved=false`);
+    console.log(`   PATCH ${process.env.NEXT_PUBLIC_BACKEND_URL}/api/incidents/:id/resolve`);
     console.log('\n🔐 Test credentials:');
     console.log('   Username: admin, Password: admin123');
     console.log('   Username: user, Password: user123');
