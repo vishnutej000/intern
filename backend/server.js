@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const { incidentOperations, cameraOperations, userOperations } = require('../database/operations');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || process.env.NEXT_PUBLIC_BACKEND_PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -73,7 +73,7 @@ app.get('/api/placeholder-thumbnail/:id', async (req, res) => {
 });
 
 // Authentication endpoints
-const JWT_SECRET = process.env.JWT_SECRET || 'mandlac-x-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'securesight-x-secret-key';
 
 app.post('/api/auth/login', async (req, res) => {
   try {

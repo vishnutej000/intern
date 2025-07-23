@@ -58,7 +58,7 @@ A professional CCTV monitoring dashboard for jewelry store security with real-ti
 - ✅ **Color-coded incidents** matching incident types
 
 #### **4. Navigation Bar (Top)**
-- ✅ **MANDLAC-X** branding with yellow "M" logo
+✅ **SecureSight** branding with yellow "S" logo
 - ✅ **Navigation tabs**: Dashboard, Cameras, Scenes, Incidents, Users
 - ✅ **User profile**: Mohammed Alpas with email
 - ✅ **Yellow border** accent
